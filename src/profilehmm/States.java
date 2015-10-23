@@ -19,7 +19,8 @@ public class States {
 
     int state_no;
     Type type;
-    Map<States,Double> parent;
+    Map<States, Double> parent;
+    Map<States, Double> children;//no need, just checking
     Map<String, Double> emission;
 
     public Map<String, Double> getEmission() {
@@ -30,12 +31,12 @@ public class States {
         this.emission = emission;
     }
 
-
-    public States(int state_no,Type type) {
+    public States(int state_no, Type type) {
         this.state_no = state_no;
         this.type = type;
-        parent = new  HashMap<>();
-        emission =  new HashMap<String, Double>();
+        parent = new HashMap<>();
+        children = new HashMap<>();
+        emission = new HashMap<String, Double>();
     }
 
     public int getState_no() {
@@ -46,11 +47,11 @@ public class States {
         this.state_no = state_no;
     }
 
-    public Map<States,Double> getParent() {
+    public Map<States, Double> getParent() {
         return parent;
     }
 
-    public void setParent(HashMap<States,Double> parent) {
+    public void setParent(HashMap<States, Double> parent) {
         this.parent = parent;
     }
 
