@@ -9,13 +9,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 /**
  *
@@ -33,12 +32,10 @@ public class ProfileHmm {
      */
 //    static String[] proteins = new String[]{"A", "R", "N", "C", "D", "E", "Q", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"};
     static int p = 20;
-    final static double e2 = 0.11920292202211755;
+    final static double e2 = 0.13533528323;
     static Map<String, Double> amino_acid_maps = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
-        String substr = "123456789";
-        System.out.println(substr.substring(0, 3) + substr.substring(4, substr.length()));
         amino_acid_maps.put("A", 8.26);
         amino_acid_maps.put("R", 5.53);
         amino_acid_maps.put("N", 4.06);
@@ -146,14 +143,13 @@ public class ProfileHmm {
         System.gc();
         System.out.println("total columns " + column_values_main.keySet().size());
 //        System.out.println("total columns " + column_values_main.get(column_values_main.keySet().size()));
-
         /*
          Main calculation
          */
         int stateCount = 0;
         final int totalSequenceCount = multiple_sequence.size();
         States startState = new States(0, Type.Start);
-        List<States> AllStateList = new ArrayList<States>();
+        List<States> AllStateList = new ArrayList<>();
         List<States> parentListTmp = new ArrayList<>();
         parentListTmp.add(startState);
         AllStateList.add(startState);
@@ -193,7 +189,7 @@ public class ProfileHmm {
 
             //assigning parent
             States tmpParent = null;
-            ReturnVals retvalsParent = getLG_LL_GL(multiple_sequence, a, prev);
+            ReturnVals retvalsParent = getLG_LL_GL(multiple_sequence, prev, a);
             for (States parent : parentListTmp) {
                 switch (parent.type) {
                     case Insertion:
@@ -203,18 +199,18 @@ public class ProfileHmm {
                     case Main:
                         tmpParent = parent;
                         //getting counts for transition probability
-                        tmpAcidCount = column_values_main.get(prev).stream().filter(p -> p.name.equals("-")).findFirst().orElse(null);
-                        int gap_in_parent = (tmpAcidCount != null) ? tmpAcidCount.count : 0;
-                        if (gap_in_parent == gap_in_self && gap_in_self == 0) {//no computation if no sequence has gaps
-                            state.parent.put(parent, getPseudoCounts(totalSequenceCount, totalSequenceCount));
-                            parent.children.put(state, getPseudoCounts(totalSequenceCount, totalSequenceCount));//delete later
-                        } else {
+//                        tmpAcidCount = column_values_main.get(prev).stream().filter(p -> p.name.equals("-")).findFirst().orElse(null);
+//                        int gap_in_parent = (tmpAcidCount != null) ? tmpAcidCount.count : 0;
+//                        if (gap_in_parent == gap_in_self && gap_in_self == 0) {//no computation if no sequence has gaps
+//                            state.parent.put(parent, getPseudoCounts(totalSequenceCount, totalSequenceCount));
+//                            parent.children.put(state, getPseudoCounts(totalSequenceCount, totalSequenceCount));//delete later
+//                        } else {
 
-                            state.parent.put(parent, getPseudoCounts(totalSequenceCount, retvalsParent.ll));//chek for gaps to be negeted
-                            parent.children.put(state, getPseudoCounts(totalSequenceCount, retvalsParent.ll));//delete later
+                        state.parent.put(parent, getPseudoCounts(totalSequenceCount - retvalsParent.gg, retvalsParent.ll));//chek for gaps to be negeted
+                        parent.children.put(state, getPseudoCounts(totalSequenceCount - retvalsParent.gg, retvalsParent.ll));//delete later
 
-                            //System.out.println("lg" + retvalsParent.lg);
-                        }
+                        //System.out.println("lg" + retvalsParent.lg);
+//                        }
                         break;
                     case Start:
                         tmpParent = parent;
@@ -230,7 +226,7 @@ public class ProfileHmm {
                     default:
                 }
             }
-//            if (a == 13 || a == 11) {
+//            if (a == 31 ) {
 //                System.out.println("processing 11");
 //            }
             parentListTmp = new ArrayList<>();
@@ -248,7 +244,8 @@ public class ProfileHmm {
             deleteInsertState.parent.put(tmpParent, (tmpParent.type == Type.Start) ? e2
                     : getPseudoCounts(totalSequenceCount, retvalsParent.lg));
             tmpParent.children.put(deleteInsertState,
-                    (tmpParent.type == Type.Start) ? e2 : getPseudoCounts(totalSequenceCount, retvalsParent.lg));//delete later
+                    (tmpParent.type == Type.Start) ? e2
+                            : getPseudoCounts(totalSequenceCount - retvalsParent.gg, retvalsParent.lg));//delete later
             parentListTmp.add(deleteInsertState);
             AllStateList.add(deleteInsertState);
 
@@ -256,34 +253,52 @@ public class ProfileHmm {
             //insert state next
             deleteInsertState = new States(stateCount + 1 + a, Type.Insertion);
             deleteInsertState.parent.put(deleteInsertState, e2);
-            deleteInsertState.parent.put(state, getPseudoCounts(totalSequenceCount, returnValsNext.gl));
+            deleteInsertState.parent.put(state, getPseudoCounts(totalSequenceCount - returnValsNext.gg, returnValsNext.gl));
 
             state.children.put(deleteInsertState,
-                    getPseudoCounts(totalSequenceCount, returnValsNext.gl));//delete later
+                    getPseudoCounts(totalSequenceCount - returnValsNext.gg, returnValsNext.gl));//delete later
             parentListTmp.add(deleteInsertState);
             AllStateList.add(deleteInsertState);
 
         }
         States endState = new States(column_values_main.keySet().size(), Type.End);
-
+//        States tmp = null;
+//        double priorProb = 0.0;
         for (States s : parentListTmp) {
             switch (s.type) {
                 case Insertion:
+//                    priorProb += 1 - e2;
+                    s.children.put(endState, 1 - e2);
                     endState.parent.put(s, (1 - e2));//plz be sure about it,right now its original log -2 val
                     break;
                 case Main:
-                    endState.parent.put(s, 1 - ((1 - e2) + s.parent.values().iterator().next()));
+//                    tmp = s;
+//                    Iterator<Double> it = ((parentListTmp.stream().filter((States st) -> st.type == Type.Deletion).findAny().get()).parent.values().iterator());
+//                    it.next();
+//                    priorProb += it.next();
+                    double tmp=0.0;
+                    for (Map.Entry<States, Double> entrySet : s.children.entrySet()) {
+                        tmp+=entrySet.getValue();
+                        
+                    }
+                    s.children.put(endState, 1-tmp);
+                    endState.parent.put(s, 1-tmp);
                     break;
                 case Deletion:
-                    endState.parent.put(s, 1 - s.parent.values().iterator().next());
+                    
+                    s.children.put(endState, 1-e2);
+                    endState.parent.put(s, 1-e2);
                     break;
                 default:
             }
             //System.out.println("name " + s.type + s.state_no);
         }
-        System.out.println("total state count " + AllStateList.size());
-//        printAll(startState);
-        System.out.println(printTransmissionMatrix(AllStateList));
+
+//        tmp.children.put(endState, 1 - priorProb);
+//        endState.parent.put(tmp, 1 - priorProb);
+//        System.out.println("total state count " + AllStateList.size());
+        printAll(startState);
+        //System.out.println(printTransmissionMatrix(AllStateList));
 
 //        System.out.println("size of last parents " + parentListTmp.size());
 //        printAll(parentListTmp.get(0));
@@ -310,7 +325,6 @@ public class ProfileHmm {
                     csv += (s.emission.get(acid) + ",");
                 }
                 csv += "\r\n";
-//                System.out.println("");
             }
         }
         return csv;
@@ -331,7 +345,7 @@ public class ProfileHmm {
             }
             csv += ("\r\n");
         }
-        return "States,"+tmp+"\r\n"+csv;
+        return "States," + tmp + "\r\n" + csv;
     }
 
     public static void printAll(States state) {
@@ -343,8 +357,8 @@ public class ProfileHmm {
             //System.out.println("Key " + entrySet.getKey().type + "" + entrySet.getKey().state_no + " val " + entrySet.getValue());
             i += entrySet.getValue();
         }
-        System.out.println(state.type + "" + state.state_no + " Total = " + i);
-        if (i > 1.0) {
+//        System.out.println(state.type + "" + state.state_no + " Total = " + i);
+        if (i > 1.0 || i < 1.0) {
 //                || (state.state_no > 10 && state.state_no < 13)) {
             for (Map.Entry<States, Double> entrySet : state.children.entrySet()) {
                 System.out.println("Key " + entrySet.getKey().type + "" + entrySet.getKey().state_no + " val " + entrySet.getValue());
@@ -377,16 +391,17 @@ public class ProfileHmm {
 //            }
 //        });
         for (Map.Entry<String, String> entrySet : multiple_sequence.entrySet()) {
-            String key = entrySet.getKey();
+            //String key = entrySet.getKey();
             String sequence = entrySet.getValue();
             try {
                 if (sequence.toCharArray()[a] == '-' && sequence.toCharArray()[b] != '-') {
                     retVals.gl++;
                 } else if (sequence.toCharArray()[a] != '-' && sequence.toCharArray()[b] == '-') {
                     retVals.lg++;
-                } else if ((sequence.toCharArray()[a] != '-' && sequence.toCharArray()[b] != '-')
-                        || (sequence.toCharArray()[a] == '-' && sequence.toCharArray()[b] == '-')) {
+                } else if ((sequence.toCharArray()[a] != '-' && sequence.toCharArray()[b] != '-')) {
                     retVals.ll++;
+                } else if (sequence.toCharArray()[a] == '-' && sequence.toCharArray()[b] == '-') {
+                    retVals.gg++;
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 System.out.println("");
@@ -403,7 +418,7 @@ public class ProfileHmm {
      * @return
      */
     public static double getPseudoCounts(int sum, int count) {
-        return getLogOdds((double) (1 + count) / (3 + sum));
+        return ((double) (1 + count) / (3 + sum));
 
     }
 
@@ -440,6 +455,7 @@ public class ProfileHmm {
         public int ll = 0;
         public int lg = 0;
         public int gl = 0;
+        public int gg = 0;
     }
 
     public static class AcidCount {
