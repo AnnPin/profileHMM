@@ -57,7 +57,7 @@ public class States {
 
     @Override
     public String toString() {
-        return "States{" + "state_no=" + state_no + ", type=" + type + '}';
+        return "s=" + state_no + "-t=" + type;
     }
 
 }

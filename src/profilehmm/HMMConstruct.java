@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static profilehmm.Config.e2;
+import static profilehmm.Config.le2;
 import static profilehmm.Config.p;
 import profilehmm.ProfileHmm.Type;
 
@@ -140,8 +141,8 @@ public class HMMConstruct {
             for (States parent : parentListTmp) {
                 switch (parent.type) {
                     case Insertion:
-                        state.parent.put(parent, (1 - e2));//plz be sure about it,right now its original log -2 val
-                        parent.children.put(state, 1 - e2);//delete later
+                        state.parent.put(parent, (getLogOdds(1 - le2)));//plz be sure about it,right now its original log -2 val
+                        parent.children.put(state, getLogOdds(1 - le2));//delete later
                         break;
                     case Main:
                         tmpParent = parent;
@@ -160,15 +161,15 @@ public class HMMConstruct {
                     case Start:
                         tmpParent = parent;
 //                        state.parent.put(parent, getPseudoCounts(totalSequenceCount, totalSequenceCount - gap_in_self));
-                        state.parent.put(parent, 1 - e2 - e2);
-                        parent.children.put(state, 1 - e2 - e2);//delete later
+                        state.parent.put(parent, getLogOdds(1 - le2 - le2));
+                        parent.children.put(state, getLogOdds(1 - le2 - le2));//delete later
                         break;
                     case Deletion:
 
                         tmpDeleteState = parent;
 //                        state.parent.put(parent, 1 - parent.parent.values().iterator().next());
-                        state.parent.put(parent, 1 - e2);
-                        parent.children.put(state, 1 - e2);//delete later
+                        state.parent.put(parent, getLogOdds(1 - le2));
+                        parent.children.put(state, getLogOdds(1 - le2));//delete later
                         break;
                     default:
                 }
@@ -209,9 +210,9 @@ public class HMMConstruct {
         for (States s : parentListTmp) {
             switch (s.type) {
                 case Insertion:
-//                    priorProb += 1 - e2;
-                    s.children.put(endState, 1 - e2);
-                    endState.parent.put(s, (1 - e2));//plz be sure about it,right now its original log -2 val
+//                    priorProb += getLogOdds(1 - le2);
+                    s.children.put(endState, getLogOdds(1 - le2));
+                    endState.parent.put(s, getLogOdds(1 - le2));//plz be sure about it,right now its original log -2 val
                     break;
                 case Main:
                     double tmp = 0.0;
@@ -224,8 +225,8 @@ public class HMMConstruct {
                     break;
                 case Deletion:
 
-                    s.children.put(endState, 1 - e2);
-                    endState.parent.put(s, 1 - e2);
+                    s.children.put(endState, getLogOdds(1 - le2));
+                    endState.parent.put(s, getLogOdds(1 - le2));
                     break;
                 default:
             }
@@ -315,6 +316,7 @@ public class HMMConstruct {
     private double getLogOdds(double p) {
 //        return Math.log((p) / (1 - p));
         return Math.log(p);
+//        return  p;
     }
 
 //    private double getLogits(int probability) {

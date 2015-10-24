@@ -6,10 +6,15 @@
 package profilehmm;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -18,9 +23,22 @@ import java.util.Scanner;
 public class Config {
 
     final static int p = 20;
-    final static double e2 = 0.13533528323;
+    final static double le2 = 0.13533528323;
+    final static double e2 = -2;
 
     Map<String, Double> amino_acid_maps;
+
+    public static void printCSVFile(String fileName, String str) {
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(fileName + ".csv", "UTF-8");
+            writer.print(str);
+            writer.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+            Logger.getLogger(ProfileHmm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
 
     public Map<String, String> readFasta(String FileName) throws IOException {
         File fl = new File(FileName);
