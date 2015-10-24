@@ -33,8 +33,8 @@ public class Viterbi {
         List<States> allStates = hmmc.getStates();
         System.out.println("total states " + allStates.size());
         config.amino_acid_maps.put("-", 0.0);
-        States[][] path = new States[config.amino_acid_maps.size() + 1][allStates.size()];
-        Double[][] values = new Double[config.amino_acid_maps.size() + 1][allStates.size()];
+        States[][] path = new States[viterbiInput.length() + 1][allStates.size()];
+        Double[][] values = new Double[viterbiInput.length() + 1][allStates.size()];
 //        Arrays.fill(values, 0.0);//init with zeros
         values[0][0] = 1.0;
         Map<String, Double> valuesMap = new HashMap<>();
@@ -70,9 +70,15 @@ public class Viterbi {
 //        Arrays.asList(values[0]).forEach(n -> System.out.println(n));
         for (char ch : viterbiInput.toCharArray()) {
             for (int j = 0; j < allStates.size(); j++) {
+                if (j + 1 == allStates.size() && column == viterbiInput.length()) {
+
+                    System.out.println("test");
+                }
                 double probability = (values[column][j] != null) ? values[column][j] : 0.0;
                 States currentStates = allStates.get(j);
                 if (currentStates.emission.get(ch + "") == null) {
+//                        && (currentStates.type != Type.Deletion
+//                        && currentStates.type != Type.End)) {
                     values[column][j] = 0.0;
                 } else {
                     double emissionProbability = getInverseLog(currentStates.emission.get(ch + ""));
@@ -93,7 +99,15 @@ public class Viterbi {
             }
             column++;
         }
-        Arrays.asList(values[viterbiInput.length()]).forEach(n -> System.out.println(n));
+//        System.out.println(allStates.get(allStates.size()-1).state_no+""+
+//                allStates.get(allStates.size()-1).type);
+        for (int i = 0; i < allStates.size(); i++) {
+//            System.out.println(allStates.get(i).type+""+allStates.get(i).state_no+"__"+values[viterbiInput.length()][i]);
+            System.out.println((path[viterbiInput.length()][i]!=null)?path[viterbiInput.length()][i].toString():0
+                    + "__" + values[viterbiInput.length()][i]);
+
+        }
+//        Arrays.asList(values[viterbiInput.length()]).forEach(n -> System.out.println(n));
     }
 
     private static double getInverseLog(double probability) {

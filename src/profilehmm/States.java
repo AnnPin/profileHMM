@@ -55,4 +55,9 @@ public class States {
         this.parent = parent;
     }
 
+    @Override
+    public String toString() {
+        return "States{" + "state_no=" + state_no + ", type=" + type + '}';
+    }
+
 }
