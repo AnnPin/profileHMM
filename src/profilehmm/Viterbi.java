@@ -71,26 +71,27 @@ public class Viterbi {
         for (char ch : viterbiInput.toCharArray()) {
             for (int j = 0; j < allStates.size(); j++) {
                 if (j + 1 == allStates.size() && column == viterbiInput.length()) {
-
                     System.out.println("test");
                 }
                 double probability = (values[column][j] != null) ? values[column][j] : 0.0;
                 States currentStates = allStates.get(j);
-                if (currentStates.emission.get(ch + "") == null) {
-//                        && (currentStates.type != Type.Deletion
-//                        && currentStates.type != Type.End)) {
-                    values[column][j] = 0.0;
-                } else {
-                    double emissionProbability = getInverseLog(currentStates.emission.get(ch + ""));
-                    for (Map.Entry<States, Double> p : currentStates.parent.entrySet()) {
-                        double tmp = ((valuesMap.get((p.getKey().state_no + "" + p.getKey().type)) != null) ? (valuesMap.get((p.getKey().state_no + "" + p.getKey().type))) : 0);
-                        if (probability < tmp
-                                * p.getValue() * emissionProbability) {
-                            probability = ((valuesMap.get((p.getKey().state_no + "" + p.getKey().type)) != null) ? (valuesMap.get((p.getKey().state_no + "" + p.getKey().type))) : 0)
-                                    * p.getValue() * emissionProbability;
-                            path[column][j] = currentStates;
-                        }
+//                if (currentStates.emission.get(ch + "") == null) {
+////                        && (currentStates.type != Type.Deletion
+////                        && currentStates.type != Type.End)) {
+//                    values[column][j] = 0.0;
+//                }
+//                else {
+                double emissionProbability = (currentStates.type == Type.Deletion || currentStates.type == Type.End) ? 1
+                        : ((currentStates.emission.get(ch + "") != null) ? getInverseLog(currentStates.emission.get(ch + "")) : 0);
+                for (Map.Entry<States, Double> p : currentStates.parent.entrySet()) {
+                    double tmp = ((valuesMap.get((p.getKey().state_no + "" + p.getKey().type)) != null) ? (valuesMap.get((p.getKey().state_no + "" + p.getKey().type))) : 0);
+                    if (probability < tmp
+                            * p.getValue() * emissionProbability) {
+                        probability = ((valuesMap.get((p.getKey().state_no + "" + p.getKey().type)) != null) ? (valuesMap.get((p.getKey().state_no + "" + p.getKey().type))) : 0)
+                                * p.getValue() * emissionProbability;
+                        path[column][j] = p.getKey();
                     }
+//                    }
                     values[column][j] = probability;
                 }
                 if (probability > 0) {
@@ -103,11 +104,11 @@ public class Viterbi {
 //                allStates.get(allStates.size()-1).type);
         for (int i = 0; i < allStates.size(); i++) {
 //            System.out.println(allStates.get(i).type+""+allStates.get(i).state_no+"__"+values[viterbiInput.length()][i]);
-            System.out.println((path[viterbiInput.length()][i]!=null)?path[viterbiInput.length()][i].toString():0
+            System.out.println((path[viterbiInput.length()][i] != null) ? path[viterbiInput.length()][i].toString() : 0
                     + "__" + values[viterbiInput.length()][i]);
 
         }
-//        Arrays.asList(values[viterbiInput.length()]).forEach(n -> System.out.println(n));
+        Arrays.asList(values[viterbiInput.length()]).forEach(n -> System.out.println(n));
     }
 
     private static double getInverseLog(double probability) {
