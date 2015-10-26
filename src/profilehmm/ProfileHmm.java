@@ -26,6 +26,7 @@ import java.util.logging.Logger;
  */
 public class ProfileHmm {
 
+ 
     public enum Type {
 
         Insertion, Deletion, Main, Start, End
@@ -53,22 +54,12 @@ public class ProfileHmm {
         HMMConstruct hmmc = new HMMConstruct(multiple_sequence);
         List<States> allStates = hmmc.getStates();
         System.out.println("total states " + allStates.size());
-        printCSVFile(args[1], printEmissionMatrix(allStates));
+        Config.printCSVFile(args[1], printEmissionMatrix(allStates));
 
-        printCSVFile(args[2], printTransmissionMatrix(allStates));
+        Config.printCSVFile(args[2], printTransmissionMatrix(allStates));
     }
 
-    private static void printCSVFile(String fileName, String str) {
-        PrintWriter writer;
-        try {
-            writer = new PrintWriter(fileName + ".csv", "UTF-8");
-            writer.print(str);
-            writer.close();
-        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
-            Logger.getLogger(ProfileHmm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
+    
 
     private static String printEmissionMatrix(List<States> states) {
         String csv = ",";
