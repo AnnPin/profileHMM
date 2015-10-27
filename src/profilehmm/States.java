@@ -60,4 +60,9 @@ public class States {
         return "s=" + state_no + "-t=" + type;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return ((States) obj).state_no == this.state_no && ((States) obj).type == this.type;//To change body of generated methods, choose Tools | Templates.
+    }
+
 }

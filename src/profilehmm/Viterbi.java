@@ -34,7 +34,8 @@ public class Viterbi {
         List<States> allStates = hmmc.getStates();
         System.out.println("total states " + allStates.size());
         config.amino_acid_maps.put("-", 0.0);
-        Stack<Path> stack = new Stack<>();
+//        Stack<Path> stack = new Stack<>();
+        Map<States, States> pathmap = new HashMap<>();
         States[][] path = new States[viterbiInput.length() + 1][allStates.size()];
         Double[][] values = new Double[viterbiInput.length() + 1][allStates.size()];
         for (int i = 0; i < viterbiInput.length() + 1; i++) {
@@ -74,7 +75,8 @@ public class Viterbi {
             valuesViterbi += values[0][j] + ",";
             valuesMap.put(allStates.get(j).toString(), values[0][j]);
             if (values[0][j] > 0) {
-                stack.push(new Path(allStates.get(j), allStates.get(0)));
+                pathmap.put(allStates.get(j), allStates.get(0));
+//                stack.push(new Path(allStates.get(j), allStates.get(0)));
             }
         }
         valuesViterbi += "\r\n";
@@ -111,7 +113,10 @@ public class Viterbi {
                             < (tmp * getInverseLog(p.getValue()) * emissionProbability)) {
                         probability = tmp * getInverseLog(p.getValue()) * emissionProbability;
                         path[column][j] = p.getKey();
-                        stack.push(new Path(currentStates, p.getKey()));
+
+                        pathmap.put(currentStates, p.getKey());
+
+//                        stack.push(new Path(currentStates, p.getKey()));
                         if (probability > 1) {
                             System.out.println("pro " + probability);
                         }
@@ -140,7 +145,7 @@ public class Viterbi {
             column++;
         }
         Config.printCSVFile("viterbiValues", valuesViterbi);
-        getPath(stack);
+       // getPath(stack);
 
 //        System.out.println(allStates.get(allStates.size()-1).state_no+""+
 //                allStates.get(allStates.size()-1).type);
