@@ -36,6 +36,7 @@ public class Viterbi {
         config.amino_acid_maps.put("-", 0.0);
 //        Stack<Path> stack = new Stack<>();
         Map<States, States> pathmap = new HashMap<>();
+        List<Path> stack = new ArrayList<>();
         States[][] path = new States[viterbiInput.length() + 1][allStates.size()];
         Double[][] values = new Double[viterbiInput.length() + 1][allStates.size()];
         for (int i = 0; i < viterbiInput.length() + 1; i++) {
@@ -76,7 +77,7 @@ public class Viterbi {
             valuesMap.put(allStates.get(j).toString(), values[0][j]);
             if (values[0][j] > 0) {
                 pathmap.put(allStates.get(j), allStates.get(0));
-//                stack.push(new Path(allStates.get(j), allStates.get(0)));
+                stack.add(new Path(allStates.get(j), allStates.get(0)));
             }
         }
         valuesViterbi += "\r\n";
@@ -115,8 +116,19 @@ public class Viterbi {
                         path[column][j] = p.getKey();
 
                         pathmap.put(currentStates, p.getKey());
+                        Stack<Path> tmpStack = new Stack<>();
+                        for (Path tmppath : stack) {
 
-//                        stack.push(new Path(currentStates, p.getKey()));
+                            if (tmppath.current == currentStates ) {
+                                tmpStack.add(tmppath);
+                            }
+//                                tmpStack.remove(tmppath);
+                        }
+                        for (Path tmppath : tmpStack) {
+                            stack.remove(tmppath);
+                        }
+//                        stack = tmpStack;
+                        stack.add(new Path(currentStates, p.getKey()));
                         if (probability > 1) {
                             System.out.println("pro " + probability);
                         }
@@ -144,9 +156,9 @@ public class Viterbi {
 //            System.out.println("");
             column++;
         }
-        Config.printCSVFile("viterbiValues", valuesViterbi);
-       // getPath(stack);
-
+        //Config.printCSVFile("viterbiValues", valuesViterbi);
+//        getPath(pathmap);
+        getPath(stack);
 //        System.out.println(allStates.get(allStates.size()-1).state_no+""+
 //                allStates.get(allStates.size()-1).type);
 //        for (int i = 0; i < allStates.size(); i++) {
@@ -158,10 +170,26 @@ public class Viterbi {
 //        Arrays.asList(values[viterbiInput.length()]).forEach(n -> System.out.println(n));
     }
 
-    private static void getPath(Stack<Path> list) {
+    private static void getPath(Map<States, States> list) {
         String query = "";
-        while (!list.empty()) {
-            Path p = list.pop();
+        for (Map.Entry<States, States> entrySet : list.entrySet()) {
+//            State p = list.pop();
+            if (query.equals("")) {
+                query = entrySet.getValue().toString();
+                System.out.println("State " + entrySet.getKey().toString());
+            } else if (entrySet.toString().equals(query)) {
+                query = entrySet.getValue().toString();
+                System.out.println("State " + entrySet.getKey().toString());
+            }
+
+        }
+    }
+
+    private static void getPath(List<Path> list) {
+        String query = "";
+        for (int i=list.size()-1;i>=0;i--) {
+            Path p = list.get(i);
+//            System.out.println("General " + p.current.toString() + " parent " + p.parent.toString());
             if (query.equals("")) {
                 query = p.parent.toString();
                 System.out.println("State " + p.current.toString());
