@@ -101,7 +101,7 @@ public class HMMConstruct {
         parentListTmp.add(startState);
         AllStateList.add(startState);
         //insert state starting
-        States insertState = new States(stateCount + 1, Type.Insertion);
+        States insertState = new States(stateCount, Type.Insertion);
         insertState.parent.put(insertState, e2);
         insertState.parent.put(startState, e2);
         startState.children.put(insertState, e2);//delete
