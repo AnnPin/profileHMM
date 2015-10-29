@@ -188,31 +188,36 @@ public class Viterbi {
 
     private static void getPath(Map<String, States> list) {
         String input = input2.values().iterator().next();
+        input = input.replace("-", "");
         String query = "", ch = input.charAt(input.length() - 1) + "";
         int found = input.length() - 1;
-        States tmp = allStates.get((allStates.size() - 1));
-        while (tmp != null) {
-            System.out.println(tmp);
-            tmp = list.get(tmp.toString() + ch);
-//            if (found == 0) {
-//                break;
+//        States tmp = allStates.get((allStates.size() - 1));
+//        while (tmp != null) {
+//            System.out.println(tmp);
+//            tmp = list.get(tmp.toString() + ch);
+////            if (found == 0) {
+////                break;
+////            }
+//            --found;
+//            if (found < 0) {
+//                ch = "-";
+//            } else {
+//                ch = input.charAt(found) + "";
 //            }
-            --found;
-            if (found < 0) {
-                ch = "-";
-            } else {
-                ch = input.charAt(found) + "";
-            }
-            while (ch == "-") {
-                if (found > 1) {
-                    ch = input.charAt(--found) + "";
-                } else {
-                    break;
+//            
+//        }
+//        System.out.println(allStates.get(allStates.size() - 1));
+        query = (allStates.get(allStates.size() - 1)).toString()+input.toCharArray()[input.length()-1]+"";
+        for (int i = input.length()-2; i >-1 ; i--) {
+            for(Map.Entry<String,States> entrySet : list.entrySet()){
+                if(entrySet.getKey().equals(query)){
+                    System.out.println(entrySet.getKey());
+                    
+                    query = entrySet.getValue().toString()+((i==0)?"-":input.toCharArray()[i]+"");
                 }
-                if (found == 0) {
-                    break;
-                }
-            }
+                
+            } 
+            
         }
     }
 
