@@ -22,6 +22,7 @@ public class States {
     Map<States, Double> parent;
     Map<States, Double> children;//no need, just checking
     Map<String, Double> emission;
+    boolean silent = false;
 
     public Map<String, Double> getEmission() {
         return emission;
@@ -37,6 +38,9 @@ public class States {
         parent = new HashMap<>();
         children = new HashMap<>();
         emission = new HashMap<String, Double>();
+        if (type == Type.Deletion || type == Type.End) {
+            silent = true;
+        }
     }
 
     public int getState_no() {
