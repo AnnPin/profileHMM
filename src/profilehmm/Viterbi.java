@@ -326,8 +326,9 @@ public class Viterbi {
                 }
 
                 if (currentState.type != Type.End) {
-//                    if (currentState.state_no != i && (currentState.type == Type.Main)) {//big logic
+//                    if (currentState.state_no != i && (currentState.type != Type.Insertion)) {//big logic
 //                        continue;
+//                    }
 //                    } else if (currentState.state_no > i + 1 && (currentState.type == Type.Insertion)) {
 //                        continue;
 //                    }
@@ -336,14 +337,14 @@ public class Viterbi {
 //                    continue;
 //                }
                 double emissionProbability = 0.0;
-                if (currentState.type == Type.Deletion && currentState.state_no == 1) {
+                if (currentState.type == Type.Main && currentState.state_no == 0) {
                     System.out.print("");
                 }
                 States parentUpper = null;
                 emissionProbability = (currentState.emission.get(lookingFor) != null) ? currentState.emission.get(lookingFor) : 0;
                 for (Map.Entry<States, Double> entrySet : currentState.parent.entrySet()) {
                     States parent = entrySet.getKey();
-                    if (parent.state_no == 2 && parent.type == Type.Main) {
+                    if (parent.state_no == 0 && parent.type == Type.Main) {
                         System.out.println("");
                     }
                     int parentIndex = mapIndexStates.get(parent.toString());
@@ -352,7 +353,7 @@ public class Viterbi {
                     double prevProbability = (parent == currentState) ? values[i][currentIndex] : values[i][parentIndex];
                     double transitionProbability = entrySet.getValue();
                     if (currentState.type == Type.Deletion) {
-//                        State 
+//                        State lastParent
 //                        while(emissionProbability==0){
 //                        
 //                        }
@@ -363,6 +364,9 @@ public class Viterbi {
                         if (emissionProbability == 0) {
                             emissionProbability = 1;
                         }
+                    } else if (currentState.state_no < i && currentState.type==Type.Main) {
+                        emissionProbability = 0;
+
                     }
 //                    else if (currentState.type == Type.End) {
 //                        emissionProbability = 1;
@@ -373,6 +377,8 @@ public class Viterbi {
                         System.out.println("");
                     }
                     if (values[i + 1][currentIndex] < probabilityMain) {
+                        if(i+1==1 && currentIndex==2)
+                            System.out.println("");
                         values[i + 1][currentIndex] = probabilityMain;
                         pathmap.put(currentState.toString() + lookingFor, parent);
                         pathmapSecond.put(((currentState.type == Type.End) ? i : (i + 1)) + "," + currentIndex, i + "," + currentIndex);
